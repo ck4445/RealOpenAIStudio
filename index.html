@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Local Gemini</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="sidebar">
+        <div id="sidebar-header"><h3>Local Gemini</h3></div>
+        <button id="new-chat-btn">+ New Chat</button>
+        <div id="chat-history-list"></div>
+        <div id="sidebar-footer">
+            <a href="#" class="nav-link active" data-view="chat-view">Chat</a>
+            <a href="#" class="nav-link" data-view="models-view">Models</a>
+            <button id="theme-toggle"></button>
+        </div>
+    </div>
+
+    <div id="main-content">
+        <!-- Chat View -->
+        <div id="chat-view" class="view active">
+            <div id="chat-header">
+                <div class="custom-select-wrapper">
+                    <select id="model-selector"></select>
+                </div>
+            </div>
+            
+            <div id="status-container" style="display: none;"></div>
+            <div id="chat-welcome-container" style="display: none;">
+                <h1 class="welcome-header">Hello, there</h1>
+                <div class="suggestion-cards">
+                    <div class="suggestion-card" data-prompt="Explain quantum computing in simple terms">Explain quantum computing</div>
+                    <div class="suggestion-card" data-prompt="Got any creative ideas for a 10 year old’s birthday?">Ideas for a birthday party</div>
+                    <div class="suggestion-card" data-prompt="What's the difference between a lama and an alpaca?">Lama vs alpaca</div>
+                </div>
+            </div>
+            <div id="chat-conversation-area" style="display: none;">
+                <div id="chat-container-wrapper">
+                    <div id="chat-container"></div>
+                </div>
+                <div id="prompt-area"><form id="prompt-form"><textarea id="prompt-input" placeholder="Ask me anything..." rows="1"></textarea></form></div>
+            </div>
+        </div>
+
+        <!-- Models View -->
+        <div id="models-view" class="view">
+            <div id="models-view-content">
+                <h1>Discover Models</h1>
+                <p style="color: var(--secondary-text-color); margin-top: 8px; margin-bottom: 24px;">Download and manage models from the Ollama library.</p>
+                <input type="text" id="model-search-bar" placeholder="Search models by name, family, or size...">
+                <div id="model-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal dialog for renaming chat -->
+    <div id="rename-modal-backdrop" class="modal-backdrop">
+        <div class="modal-dialog">
+            <label for="rename-modal-input">Rename Chat</label>
+            <input type="text" id="rename-modal-input" maxlength="60">
+            <div class="modal-actions">
+                <button id="rename-modal-cancel" class="cancel" type="button">Cancel</button>
+                <button id="rename-modal-ok" type="button">Rename</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./renderer.js" defer></script>
+</body>
+</html>
