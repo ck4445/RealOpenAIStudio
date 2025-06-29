@@ -185,10 +185,14 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.textContent      = expand ? 'Show less' : 'Show more';
     }
     function syncLocalTagsIntoDiscover() {
+        for (let i = DISCOVER_MODELS.length - 1; i >= 0; i--) {
+            if (DISCOVER_MODELS[i].family === 'Other Installed') {
+                DISCOVER_MODELS.splice(i, 1);
+            }
+        }
         const known = new Set(DISCOVER_MODELS.map(m => m.name));
         localModels.forEach(tag => {
-            const represented = DISCOVER_MODELS.some(m => isInstalled(m.name) && m.name === tag);
-            if (!known.has(tag) && !represented) {
+            if (!known.has(tag)) {
                 DISCOVER_MODELS.push({ family: 'Other Installed', size: 'local', gb: '', name: tag });
                 known.add(tag);
             }
@@ -242,7 +246,8 @@ document.addEventListener('DOMContentLoaded', () => {
     async function refreshLocalModels() {
         const res = await fetch(`${OLLAMA_HOST}/api/tags`);
         if (!res.ok) throw new Error(`Ollama API ${res.status}`);
-        localModels = (await res.json()).models.map(m => m.name);
+        const data = await res.json();
+        localModels = [...new Set(data.models.map(m => m.name.replace(/:latest$/, '')))];
         syncLocalTagsIntoDiscover();
         renderModelSelector();
         renderDiscoverModels();
@@ -531,6 +536,23 @@ document.addEventListener('DOMContentLoaded', () => {
     modelSelector.addEventListener('change', startNewChat);
     themeToggle.addEventListener('click', toggleTheme);
     newChatBtn.addEventListener('click', startNewChat);
+    chatHistoryList.addEventListener('click', async e => {
+        const item = e.target.closest('.chat-history-item');
+        if (!item) return;
+        const id = item.dataset.id;
+        if (e.target.closest('.rename-btn')) {
+            const newTitle = await showRenameModal(chats[id].title);
+            if (newTitle && newTitle !== chats[id].title) await renameChat(id, newTitle);
+            return;
+        }
+        if (e.target.closest('.delete-btn')) {
+            await deleteChat(id);
+            return;
+        }
+        if (id !== activeChatId) {
+            await loadChat(id);
+        }
+    });
 
     navLinks.forEach(a => a.addEventListener('click', e => {
         e.preventDefault();
