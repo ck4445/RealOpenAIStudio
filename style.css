@@ -79,7 +79,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Google Sans"
 .custom-select-wrapper select:hover { border-color: var(--secondary-text-color); }
 .custom-select-wrapper select:focus { outline: none; border-color: var(--primary-accent); }
 .custom-select-wrapper::after { content: '▼'; font-size: 10px; color: var(--secondary-text-color); position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; }
-.custom-select-wrapper select option { background-color: var(--card-bg); color: var(--text-color); }
+.custom-select-wrapper select option {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    padding: 6px 10px;
+    font-size: 14px;
+}
 #chat-view { flex-grow: 1; display: flex; flex-direction: column; }
 #status-container, #chat-welcome-container { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 40px; }
 #chat-welcome-container .welcome-header { font-size: 3.5em; font-weight: 400; background: -webkit-linear-gradient(45deg, #8ab4f8, #a5d6a7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 40px; }
@@ -144,7 +149,24 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Google Sans"
 .download-btn { padding: 8px 16px; border: none; border-radius: 20px; cursor: pointer; background-color: var(--primary-accent); color: var(--bg-color); font-weight: 500; white-space: nowrap; transition: background-color 0.2s; }
 .download-btn:hover:not([disabled]) { opacity: 0.85; }
 .download-btn[disabled] { background-color: var(--input-bg); color: var(--secondary-text-color); cursor: default; }
+.uninstall-btn { padding: 8px 16px; border: 1px solid var(--border-color); border-radius: 20px; cursor: pointer; background: none; color: var(--text-color); white-space: nowrap; transition: background-color 0.2s, border-color 0.2s; }
+.uninstall-btn:hover { background-color: var(--hover-bg); border-color: var(--secondary-text-color); }
 .progress-text { font-size: 0.9em; color: var(--primary-accent); white-space: nowrap; }
+.toggle-wrapper { text-align: center; margin-top: 8px; }
+.toggle-more-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+.toggle-more-btn:hover {
+    background-color: var(--hover-bg);
+    border-color: var(--secondary-text-color);
+}
 /* Modal dialog styles */
 .modal-backdrop {
     display: none;
@@ -198,4 +220,3 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Google Sans"
 #chat-view:not(.active) {
     display: none;
 }
-``` :contentReference[oaicite:0]{index=0}
