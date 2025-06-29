@@ -273,6 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
             data.models
                 .map(m => m.name.replace(/:latest$/, ''))
                 .filter(name => name.includes(':'))
+
         )];
         syncLocalTagsIntoDiscover();
         renderModelSelector();
