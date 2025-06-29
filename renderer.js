@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const OLLAMA_HOST       = 'http://localhost:11434';
     let localModels         = [];
     let isGenerating        = false;
+    let chatAbortCtrl       = null;
     let chatHistory         = [];
     let chats               = {};
     let activeChatId        = null;
@@ -161,9 +162,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     `<div class="model-variant ${hide}" ${style}>
                          <div class="model-info"><strong>${m.size}</strong><span>${m.gb}</span></div>
                          <div class="download-status">
-                             <button class="download-btn" data-model-name="${m.name}" ${have ? 'disabled' : ''}>
-                                 ${have ? 'Downloaded' : 'Download'}
-                             </button>
+                             ${have
+                                ? `<button class="uninstall-btn" data-model-name="${m.name}">Uninstall</button>`
+                                : `<button class="download-btn" data-model-name="${m.name}">Download</button>`}
                          </div>
                      </div>`;
             });
@@ -242,12 +243,37 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    async function uninstallModel(tag, btn) {
+        if (!confirm(`Uninstall ${tag}?`)) return;
+        const pane = btn.parentElement;
+        btn.disabled = true;
+        pane.innerHTML = '<span class="progress-text">Removing…</span>';
+        try {
+            const res = await fetch(`${OLLAMA_HOST}/api/delete`, {
+                method: 'DELETE',
+                body: JSON.stringify({ model: tag })
+            });
+            if (!res.ok) throw new Error(res.statusText);
+            pane.innerHTML = '<span class="progress-text">Removed</span>';
+        } catch (err) {
+            console.error(err);
+            pane.innerHTML = `<button class="uninstall-btn" data-model-name="${tag}">Retry</button>`;
+        } finally {
+            await new Promise(r => setTimeout(r, 1000));
+            await refreshLocalModels();
+        }
+    }
+
     /* ───────────────── REFRESH LOCAL MODELS ───────────────────────── */
     async function refreshLocalModels() {
         const res = await fetch(`${OLLAMA_HOST}/api/tags`);
         if (!res.ok) throw new Error(`Ollama API ${res.status}`);
         const data = await res.json();
-        localModels = [...new Set(data.models.map(m => m.name.replace(/:latest$/, '')))];
+        localModels = [...new Set(
+            data.models
+                .map(m => m.name.replace(/:latest$/, ''))
+                .filter(name => name.includes(':'))
+        )];
         syncLocalTagsIntoDiscover();
         renderModelSelector();
         renderDiscoverModels();
@@ -407,6 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
         promptInput.value = '';
         promptInput.style.height = 'auto';
         const assistantWrap = addMessage('assistant', 'thinking');
+        chatAbortCtrl = new AbortController();
         try {
             const res = await fetch(`${OLLAMA_HOST}/api/chat`, {
                 method: 'POST',
@@ -414,7 +441,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     model: modelSelector.value,
                     messages: chatHistory,
                     stream: true
-                })
+                }),
+                signal: chatAbortCtrl.signal
             });
             if (!res.ok) throw new Error(res.statusText);
             const reader  = res.body.getReader();
@@ -451,7 +479,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 scrollToBottom();
             }
         } catch (err) {
-            assistantWrap.innerHTML = `<div class="message assistant">Error: ${err.message}</div>`;
+            if (err.name === 'AbortError') {
+                assistantWrap.remove();
+            } else {
+                assistantWrap.innerHTML = `<div class="message assistant">Error: ${err.message}</div>`;
+            }
         } finally {
             isGenerating = false;
         }
@@ -518,6 +550,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* ───────────────── NEW CHAT JS (complete) ─────────────────────── */
     function startNewChat() {
+        if (isGenerating && chatAbortCtrl) {
+            chatAbortCtrl.abort();
+            isGenerating = false;
+        }
+        chatAbortCtrl = null;
         activeChatId = null;
         chatHistory = [];
         chatContainer.innerHTML = '';
@@ -529,6 +566,8 @@ document.addEventListener('DOMContentLoaded', () => {
     modelList.addEventListener('click', e => {
         const dl = e.target.closest('.download-btn');
         if (dl && !dl.disabled) { downloadModel(dl.dataset.modelName, dl); return; }
+        const un = e.target.closest('.uninstall-btn');
+        if (un) { uninstallModel(un.dataset.modelName, un); return; }
         const toggle = e.target.closest('.toggle-more-btn');
         if (toggle) { handleToggle(toggle); return; }
     });

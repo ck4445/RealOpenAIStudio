@@ -83,6 +83,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Google Sans"
     background-color: var(--card-bg);
     color: var(--text-color);
     padding: 6px 10px;
+    font-size: 14px;
 }
 #chat-view { flex-grow: 1; display: flex; flex-direction: column; }
 #status-container, #chat-welcome-container { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 40px; }
@@ -148,6 +149,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Google Sans"
 .download-btn { padding: 8px 16px; border: none; border-radius: 20px; cursor: pointer; background-color: var(--primary-accent); color: var(--bg-color); font-weight: 500; white-space: nowrap; transition: background-color 0.2s; }
 .download-btn:hover:not([disabled]) { opacity: 0.85; }
 .download-btn[disabled] { background-color: var(--input-bg); color: var(--secondary-text-color); cursor: default; }
+.uninstall-btn { padding: 8px 16px; border: 1px solid var(--border-color); border-radius: 20px; cursor: pointer; background: none; color: var(--text-color); white-space: nowrap; transition: background-color 0.2s, border-color 0.2s; }
+.uninstall-btn:hover { background-color: var(--hover-bg); border-color: var(--secondary-text-color); }
 .progress-text { font-size: 0.9em; color: var(--primary-accent); white-space: nowrap; }
 .toggle-wrapper { text-align: center; margin-top: 8px; }
 .toggle-more-btn {
