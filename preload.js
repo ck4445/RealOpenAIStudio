@@ -3,10 +3,14 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
+const allowedChannels = [];
+
 contextBridge.exposeInMainWorld('electronAPI', {
   // --- From Main to Renderer ---
   on: (channel, callback) => {
-    ipcRenderer.on(channel, (event, ...args) => callback(...args));
+    if (allowedChannels.includes(channel)) {
+      ipcRenderer.on(channel, (event, ...args) => callback(...args));
+    }
   },
   
   // --- From Renderer to Main (and back) ---

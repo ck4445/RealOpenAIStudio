@@ -2,6 +2,15 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    if (!Array.prototype.findLastIndex) {
+        Array.prototype.findLastIndex = function(fn, thisArg) {
+            for (let i = this.length - 1; i >= 0; i--) {
+                if (fn.call(thisArg, this[i], i, this)) return i;
+            }
+            return -1;
+        };
+    }
+
     /* ───────────────── CONFIG & GLOBAL STATE ───────────────────────── */
     const OLLAMA_HOST       = 'http://localhost:11434';
     let localModels         = [];
@@ -86,6 +95,10 @@ document.addEventListener('DOMContentLoaded', () => {
   .replace(/"/g, "&quot;")
   .replace(/'/g, "&#39;");
 
+    function sanitizeChatId(id) {
+        return /^[\w-]+$/.test(id) ? id : null;
+    }
+
 
 
     /* ───────────────── MARKED / HIGHLIGHT / KATEX SETUP ───────────── */
@@ -130,7 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Helper to parse markdown synchronously, for compatibility with the new marked version
     function parseMarkdown(text) {
-        return marked.parse(text, { async: false });
+        const raw = marked.parse(text, { async: false });
+        return DOMPurify.sanitize(raw);
     }
 
     /* ───────────────── THEME HANDLING ─────────────────────────────── */
@@ -473,6 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     (chatHistory[0].content.length > 40 ? '…' : '');
             chats[activeChatId] = { title };
         }
+        if (!sanitizeChatId(activeChatId)) return;
         await window.electronAPI.saveChat({ chatId: activeChatId, data: { title, messages: chatHistory } });
         renderChatList();
 
@@ -484,6 +499,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     async function renameChat(id, newTitle) {
         if (!newTitle || !chats[id]) return;
+        if (!sanitizeChatId(id)) return;
         const { success } = await window.electronAPI.renameChat(id, newTitle);
         if (success) {
             chats[id].title = newTitle;
@@ -493,6 +509,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     async function deleteChat(id) {
         if (!confirm(`Delete "${escapeHTML(chats[id].title)}"?`)) return;
+        if (!sanitizeChatId(id)) return;
         const { success } = await window.electronAPI.deleteChat(id);
         if (success) {
             delete chats[id];
@@ -503,6 +520,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     async function loadChat(id) {
+        if (!sanitizeChatId(id)) return;
         const data = await window.electronAPI.loadChat(id);
         if (!data) {
             alert('Could not load chat');
@@ -600,37 +618,36 @@ document.addEventListener('DOMContentLoaded', () => {
     // FIX: Robust regeneration logic
     async function regenerateResponse() {
         if (isGenerating || chatHistory.length < 2) return;
-    
+
         // Find the last user prompt to resubmit
         const lastUserIndex = chatHistory.findLastIndex(m => m.role === 'user');
         if (lastUserIndex === -1) return;
-    
+
         const promptToResubmit = chatHistory[lastUserIndex].content;
-    
-        // Remove the old prompt and any subsequent assistant responses/errors
-        chatHistory.splice(lastUserIndex);
-    
-        // Re-render the chat container from the now-correct history
-        chatContainer.innerHTML = '';
-        chatHistory.forEach(m => addMessage(m.role, m.content, false));
-        scrollToBottom();
-    
+
+        chatHistory = chatHistory.slice(0, lastUserIndex + 1);
+        while (chatContainer.children.length > chatHistory.length) {
+            chatContainer.lastElementChild.remove();
+        }
+
         // Submit the prompt again
         await handleChatSubmit(promptToResubmit);
     }
 
     function copyCode(btn) {
         const pre = btn.closest('.code-block-wrapper').querySelector('pre');
-        navigator.clipboard.writeText(pre.innerText);
-        btn.textContent = 'Copied!';
-        setTimeout(() => btn.textContent = 'Copy', 2000);
+        navigator.clipboard.writeText(pre.innerText).then(() => {
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy', 2000);
+        }).catch(() => {
+            alert('Copy failed');
+        });
     }
     function copyResponse(btn) {
         const wrap = btn.closest('.message-wrapper');
         const assistantMessage = wrap.querySelector('.assistant');
         if (assistantMessage) {
-            navigator.clipboard.writeText(assistantMessage.innerText);
-            // Visual feedback could be added here
+            navigator.clipboard.writeText(assistantMessage.innerText).catch(() => alert('Copy failed'));
         }
     }
 
@@ -695,7 +712,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (toggle) { handleToggle(toggle); return; }
     });
     modelSearch.addEventListener('input', renderDiscoverModels);
-    modelSelector.addEventListener('change', startNewChat);
     themeToggle.addEventListener('click', toggleTheme);
     newChatBtn.addEventListener('click', startNewChat);
     chatHistoryList.addEventListener('click', async e => {

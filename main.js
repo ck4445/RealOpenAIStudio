@@ -3,23 +3,33 @@
 const { app, BrowserWindow, dialog, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs').promises; // CHANGED: Using the promises API for async operations
+const fsSync = require('fs');
 const { spawn } = require('child_process');
 const http = require('http');
 
 let ollamaProcess = null;
 let isManagedByApp = false; // FIX: Flag to track if this app started the process
 
+function killOllamaProcess() {
+  if (!ollamaProcess || ollamaProcess.killed) return;
+  if (process.platform === 'win32') {
+    spawn('taskkill', ['/pid', String(ollamaProcess.pid), '/t', '/f']);
+  } else {
+    try { process.kill(-ollamaProcess.pid, 'SIGTERM'); } catch {}
+  }
+}
+
 // FIX: New function to check if Ollama is already running.
 function isOllamaRunning() {
   return new Promise((resolve) => {
     const req = http.get('http://localhost:11434', (res) => {
       res.resume(); // Consume response data to free up memory
-      resolve(true);
+      resolve(res.statusCode === 200);
     });
     req.on('error', () => resolve(false));
-    req.setTimeout(1000, () => { // Quick timeout, 1s is plenty
-        req.destroy();
-        resolve(false);
+    req.setTimeout(1000, () => {
+      req.destroy();
+      resolve(false);
     });
   });
 }
@@ -27,30 +37,23 @@ function isOllamaRunning() {
 // FIX: Improved startOllama with PATH fallback
 function startOllama() {
   const platform = process.platform;
-  const command = 'ollama';
   const args = ['serve'];
-  let specificPath;
+  let command = 'ollama';
 
   if (platform === 'win32') {
-    specificPath = path.join(process.env.LOCALAPPDATA, 'Programs', 'Ollama', 'ollama.exe');
-  } else if (platform === 'darwin') {
-    specificPath = '/usr/local/bin/ollama';
-  } else {
-    specificPath = '/usr/bin/ollama';
+    const winPath = path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Ollama', 'ollama.exe');
+    if (fsSync.existsSync(winPath)) command = winPath;
   }
 
-  // Try spawning from PATH first for non-windows
-  if (platform !== 'win32') {
-      ollamaProcess = spawn(command, args, { detached: false }); // Try system PATH
-      ollamaProcess.on('error', (err) => {
-          console.log('Could not find "ollama" in PATH, trying default location...');
-          // If it fails (e.g., not in PATH), try the specific hardcoded path
-          ollamaProcess = spawn(specificPath, args);
-          setupOllamaListeners();
-      });
-  } else {
-      // For Windows, directly use the specific path
-      ollamaProcess = spawn(specificPath, args);
+  try {
+    ollamaProcess = spawn(command, args, { detached: true });
+  } catch (err) {
+    const fallback = platform === 'darwin' ? '/usr/local/bin/ollama' : '/usr/bin/ollama';
+    if (fsSync.existsSync(fallback)) {
+      ollamaProcess = spawn(fallback, args, { detached: true });
+    } else {
+      throw err;
+    }
   }
 
   setupOllamaListeners();
@@ -96,6 +99,13 @@ function checkOllamaReady() {
 
 const CHATS_DIR = path.join(app.getPath('userData'), 'chats');
 
+function sanitizeChatId(id) {
+  if (typeof id !== 'string' || !/^[\w-]+$/.test(id)) {
+    throw new Error('Invalid chat ID');
+  }
+  return id;
+}
+
 async function setupStorage() {
     // CHANGED: mkdir is async and handles existence check.
     try {
@@ -128,8 +138,9 @@ function createWindow() {
 
   mainWindow.loadFile('index.html');
   
-  // DEV MODE: Automatically open Developer Tools
-  mainWindow.webContents.openDevTools();
+  if (process.env.NODE_ENV === 'development') {
+    mainWindow.webContents.openDevTools();
+  }
 }
 
 app.whenReady().then(async () => {
@@ -161,7 +172,7 @@ app.on('before-quit', () => {
   // FIX: Only kill the process if this app instance started it
   if (isManagedByApp && ollamaProcess && !ollamaProcess.killed) {
     console.log('Terminating managed Ollama process...');
-    ollamaProcess.kill();
+    killOllamaProcess();
   } else {
     console.log('Not terminating externally managed Ollama process.');
   }
@@ -200,6 +211,7 @@ function setupIpcHandlers() {
     });
 
     ipcMain.handle('load-chat', async (event, chatId) => {
+        chatId = sanitizeChatId(chatId);
         const filePath = path.join(CHATS_DIR, `${chatId}.json`);
         try {
             // CHANGED: Use async readFile
@@ -212,7 +224,8 @@ function setupIpcHandlers() {
     });
 
     ipcMain.handle('save-chat', async (event, chatData) => {
-        const { chatId, data } = chatData;
+        let { chatId, data } = chatData;
+        chatId = sanitizeChatId(chatId);
         const filePath = path.join(CHATS_DIR, `${chatId}.json`);
         try {
             // CHANGED: Use async writeFile
@@ -225,6 +238,7 @@ function setupIpcHandlers() {
     });
     
     ipcMain.handle('rename-chat', async (event, chatId, newTitle) => {
+        chatId = sanitizeChatId(chatId);
         const filePath = path.join(CHATS_DIR, `${chatId}.json`);
         try {
             // CHANGED: Use async readFile/writeFile
@@ -239,6 +253,7 @@ function setupIpcHandlers() {
     });
 
     ipcMain.handle('delete-chat', async (event, chatId) => {
+        chatId = sanitizeChatId(chatId);
         const filePath = path.join(CHATS_DIR, `${chatId}.json`);
         try {
             // CHANGED: Use async unlink
