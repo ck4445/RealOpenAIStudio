@@ -1,3 +1,5 @@
+// --- START OF FILE renderer.js ---
+
 document.addEventListener('DOMContentLoaded', () => {
 
     /* ───────────────── CONFIG & GLOBAL STATE ───────────────────────── */
@@ -53,10 +55,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* ───────────────── ICONS (inline SVG) ─────────────────────────── */
     const ICONS = {
-        sun: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="5"/></svg><span>Light Mode</span>`,
-        moon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 0 0 0 18 9 9 0 0 0 0-18z"/></svg><span>Dark Mode</span>`,
-        rename: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M12 20h9"/></svg>`,
-        delete: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`
+        sun: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zm-9-8c.55 0 1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1v2c0 .55.45 1 1 1zm0 16c.55 0 1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1v2c0 .55.45 1 1 1zM5.64 6.36c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41L5.64 9.18c-.39.39-1.02.39-1.41 0-.39-.39-.39-1.02 0-1.41l1.41-1.41zm12.72 12.72c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-1.41 1.41c-.39.39-1.02.39-1.41 0-.39-.39-.39-1.02 0-1.41l1.41-1.41zM5.64 19.07c-.39-.39-.39-1.02 0-1.41.39-.39 1.02-.39 1.41 0l1.41 1.41c.39.39.39 1.02 0 1.41-.39.39-1.02.39-1.41 0l-1.41-1.41zM18.36 6.36c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-1.41 1.41c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.41-1.41z"/></svg><span>Light Mode</span>`,
+        moon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M9.37 5.51c.46-1.03.3-2.27-.5-3.15C6.73 1.1 4.25 2.14 3.93 4.45c-.23 1.7.63 3.32 2.12 4.14.9.49 1.93.48 2.83-.02-.13.54-.15 1.12-.02 1.68.18.73.59 1.35 1.14 1.82.72.63 1.63.95 2.58.91.88-.03 1.73-.4 2.37-1.03.45-.45.8-1 .97-1.62.18-.65.16-1.35-.08-1.98.65.17 1.34.14 1.95-.08.57-.2 1.08-.55 1.48-1.02.79-.9 1.18-2.12.87-3.33-.26-1.02-.88-1.88-1.74-2.42-.64-.4-1.38-.63-2.15-.63-1.13 0-2.2.49-2.92 1.32-.44.52-.72 1.17-.82 1.87-.04.3-.04.6-.04.9 0 .19.01.38.03.56.02.19.02.38.02.57 0 .29-.02.58-.06.86-.08.6-.33 1.17-.74 1.63-.41.46-1 .78-1.63.92-.53.12-1.09.07-1.61-.13.34-.63.49-1.36.4-2.09-.1-.82-.54-1.54-1.17-2.07z"/></svg><span>Dark Mode</span>`,
+        rename: `<svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 0 24 24" width="16px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M5 18.08V19h.92l9.06-9.06-.92-.92L5 18.08zM17.85 4.87c-.2-.2-.51-.2-.71 0l-1.77 1.77.92.92L17.85 5.58c.2-.2.2-.51 0-.71l-.21-.2zM20.71 5.63l-2.34-2.34c-.2-.2-.51-.2-.71 0l-1.83 1.83 2.34 2.34 1.83-1.83c.2-.2.2-.51 0-.71zM3 21h18v-2H3v2z"/></svg>`,
+        delete: `<svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 0 24 24" width="16px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zM18 7H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z"/></svg>`
     };
 
     /* ───────────────── DOM REFERENCES ─────────────────────────────── */
@@ -75,23 +77,61 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatHistoryList  = document.getElementById('chat-history-list');
     const themeToggle      = document.getElementById('theme-toggle');
     const suggestionCards  = document.querySelectorAll('.suggestion-card');
-
+	/* DO NOT MODIFY THE ESCAPEHTML STUFF NO AMTTER WHAT, DO NOT MODIFY IT EVER, do not modify it
     /* ───────────────── UTILS ───────────────────────────────────────── */
     const escapeHTML = s => String(s)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
+  .replace(/&/g, "&amp;")
+  .replace(/</g, "&lt;")
+  .replace(/>/g, "&gt;")
+  .replace(/"/g, "&quot;")
+  .replace(/'/g, "&#39;");
 
-    /* ───────────────── MARKED / HIGHLIGHT SETUP ───────────────────── */
+
+
+    /* ───────────────── MARKED / HIGHLIGHT / KATEX SETUP ───────────── */
     const mdRenderer = new marked.Renderer();
     mdRenderer.code = (code, lang) => {
-        const valid = hljs.getLanguage(lang) ? lang : 'plaintext';
-        const html  = hljs.highlight(code, { language: valid, ignoreIllegals: true }).value;
-        return `<div class="code-block-wrapper"><button class="copy-btn">Copy</button><pre><code class="hljs ${valid}">${html}</code></pre></div>`;
-    };
-    marked.setOptions({ renderer: mdRenderer });
+  const language = typeof lang === 'string' ? lang.toLowerCase() : '';
+  const valid = hljs.getLanguage(language) ? language : 'plaintext';
+
+  const codeStr = typeof code === 'string'
+    ? code
+    : (code && code.text
+        ? code.text
+        : (code && code.value
+            ? code.value
+            : JSON.stringify(code)));
+
+  const html = hljs.highlight(codeStr, {
+    language: valid,
+    ignoreIllegals: true
+  }).value;
+
+  return `
+    <div class="code-block-wrapper">
+      <button class="copy-btn">Copy</button>
+      <pre><code class="hljs ${valid}">${html}</code></pre>
+    </div>`;
+};
+
+
+
+    // Use the KaTeX extension for math formulas
+    if (window.markedKatex) {
+        marked.use(markedKatex({ throwOnError: false }));
+    }
+
+    // Configure marked options
+    marked.setOptions({
+        renderer: mdRenderer,
+        gfm: true,
+        breaks: true
+    });
+    
+    // Helper to parse markdown synchronously, for compatibility with the new marked version
+    function parseMarkdown(text) {
+        return marked.parse(text, { async: false });
+    }
 
     /* ───────────────── THEME HANDLING ─────────────────────────────── */
     function setupTheme() {
@@ -112,33 +152,49 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ───────────────── INSTALL CHECK ──────────────────────────────── */
     function defaultAliasMap() {
         return {
-            "gemma3":             "gemma3:4b",
-            "qwen3":              "qwen3:8b",
-            "llama3.1":           "llama3.1:8b",
-            "llama3.2-vision":    "llama3.2-vision:11b",
-            "phi4":               "phi4:14b",
-            "phi4-mini":          "phi4-mini:3.8b",
-            "mistral":            "mistral:7b",
-            "moondream":          "moondream:1.4b",
-            "neural-chat":        "neural-chat:7b",
-            "starling-lm":        "starling-lm:7b",
-            "codellama":          "codellama:7b",
-            "llama2-uncensored":  "llama2-uncensored:7b",
-            "llava":              "llava:7b",
-            "granite3.3":         "granite3.3:8b",
-            "deepseek-r1":        "deepseek-r1:7b"
+            "gemma3": "gemma3:4b",
+            "qwen3": "qwen3:8b",
+            "llama3.1": "llama3.1:8b",
+            "llama3.2-vision": "llama3.2-vision:11b",
+            "phi4": "phi4:14b",
+            "phi4-mini": "phi4-mini:3.8b",
+            "mistral": "mistral:7b",
+            "moondream": "moondream:1.4b",
+            "neural-chat": "neural-chat:7b",
+            "starling-lm": "starling-lm:7b",
+            "codellama": "codellama:7b",
+            "llama2-uncensored": "llama2-uncensored:7b",
+            "llava": "llava:7b",
+            "granite3.3": "granite3.3:8b",
+            "deepseek-r1": "deepseek-r1:7b"
         };
     }
+    
+    // FIX: Completely rewritten isInstalled logic for accuracy. Please refrain in most cases from changing this, simply just never change it EVER, never ever change the following function.
     function isInstalled(discoverTag) {
-        if (localModels.includes(discoverTag)) return true;
-        const root = discoverTag.split(':')[0];
-        const hasSuffix = discoverTag.includes(':');
-        for (const tag of localModels) {
-            if (hasSuffix && root === tag) return true;
-            if (!hasSuffix && tag === defaultAliasMap()[discoverTag]) return true;
-        }
-        return false;
+    if (localModels.includes(discoverTag)) return true;
+
+    const aliasMap = defaultAliasMap();
+
+    // Check if the discoverTag is an alias for an actual model tag
+    if (aliasMap[discoverTag] && localModels.includes(aliasMap[discoverTag])) return true;
+
+    // Check if any installed model is an alias for the discoverTag
+    for (const [alias, actual] of Object.entries(aliasMap)) {
+        if (actual === discoverTag && localModels.includes(alias)) return true;
     }
+
+    // Fuzzy check: phi4 matches phi4:14b, phi4-mini matches phi4-mini:3.8b, etc.
+    if (localModels.some(tag =>
+        tag === discoverTag ||
+        tag.startsWith(discoverTag + ':') ||
+        discoverTag.startsWith(tag + ':')
+    )) return true;
+
+    return false;
+}
+
+
 
     /* ───────────────── RENDER & SYNC ─────────────────────────────── */
     function renderDiscoverModels() {
@@ -210,56 +266,50 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 body: JSON.stringify({ name: tag, stream: true })
             });
-            if (!res.ok) throw new Error(res.statusText);
+            if (!res.ok) throw new Error(`API Error: ${res.statusText}`);
             const reader  = res.body.getReader();
             const decoder = new TextDecoder();
-            let successReported = false;
             while (true) {
                 const { done, value } = await reader.read();
-                if (done) {
-                    if (!successReported) pane.innerHTML = '<button class="download-btn" disabled>Downloaded</button>';
-                    break;
-                }
+                if (done) break;
+                
                 decoder.decode(value).split('\n').filter(Boolean).forEach(line => {
                     const data = JSON.parse(line);
                     if (data.total && data.completed) {
                         const pct = Math.round(data.completed / data.total * 100);
                         pane.innerHTML = `<span class="progress-text">Downloading… ${pct}%</span>`;
-                    }
-                    if (data.status?.includes('success')) {
-                        pane.innerHTML = '<button class="download-btn" disabled>Downloaded</button>';
-                        successReported = true;
                     } else if (data.status && !data.total) {
                         pane.innerHTML = `<span class="progress-text">${escapeHTML(data.status)}</span>`;
+                    }
+                    if (data.status?.includes('success')) {
+                         pane.innerHTML = `<span class="progress-text">Success!</span>`;
                     }
                 });
             }
         } catch (err) {
             console.error(err);
-            pane.innerHTML = `<button class="download-btn" data-model-name="${tag}">Retry</button>`;
+            pane.innerHTML = `<span>Error</span><button class="download-btn" data-model-name="${tag}">Retry</button>`;
         } finally {
-            await new Promise(r => setTimeout(r, 2000));
+            // FIX: Remove setTimeout and refresh immediately for responsive UI.
             await refreshLocalModels();
         }
     }
 
     async function uninstallModel(tag, btn) {
-        if (!confirm(`Uninstall ${tag}?`)) return;
+        if (!confirm(`Are you sure you want to uninstall ${tag}?`)) return;
         const pane = btn.parentElement;
         btn.disabled = true;
         pane.innerHTML = '<span class="progress-text">Removing…</span>';
         try {
-            const res = await fetch(`${OLLAMA_HOST}/api/delete`, {
+            await fetch(`${OLLAMA_HOST}/api/delete`, {
                 method: 'DELETE',
-                body: JSON.stringify({ model: tag })
+                body: JSON.stringify({ name: tag })
             });
-            if (!res.ok) throw new Error(res.statusText);
-            pane.innerHTML = '<span class="progress-text">Removed</span>';
         } catch (err) {
             console.error(err);
-            pane.innerHTML = `<button class="uninstall-btn" data-model-name="${tag}">Retry</button>`;
+            pane.innerHTML = `<span>Error</span><button class="uninstall-btn" data-model-name="${tag}">Retry</button>`;
         } finally {
-            await new Promise(r => setTimeout(r, 1000));
+            // FIX: Remove setTimeout and refresh immediately.
             await refreshLocalModels();
         }
     }
@@ -267,14 +317,10 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ───────────────── REFRESH LOCAL MODELS ───────────────────────── */
     async function refreshLocalModels() {
         const res = await fetch(`${OLLAMA_HOST}/api/tags`);
-        if (!res.ok) throw new Error(`Ollama API ${res.status}`);
+        if (!res.ok) throw new Error(`Ollama API error: ${res.status}`);
         const data = await res.json();
-        localModels = [...new Set(
-            data.models
-                .map(m => m.name.replace(/:latest$/, ''))
-                .filter(name => name.includes(':'))
-
-        )];
+        localModels = data.models.map(m => m.name); // Keep the full tag including ':latest'
+        
         syncLocalTagsIntoDiscover();
         renderModelSelector();
         renderDiscoverModels();
@@ -285,16 +331,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const current = modelSelector.value;
         modelSelector.innerHTML = '';
         if (!localModels.length) {
-            modelSelector.innerHTML = '<option>No models installed</option>';
+            modelSelector.innerHTML = '<option value="">No models installed</option>';
+            modelSelector.disabled = true;
             return;
         }
-        localModels.forEach(tag => {
+        modelSelector.disabled = false;
+        localModels.sort().forEach(tag => {
             const opt = document.createElement('option');
             opt.value = tag;
-            opt.textContent = tag;
+            // Show a friendlier name, e.g., 'llama3:8b' -> 'llama3 (8b)'
+            opt.textContent = tag.replace(/:([a-zA-Z0-9.-]+)$/, ' ($1)').replace(/:latest$/, '');
             modelSelector.appendChild(opt);
         });
-        if (localModels.includes(current)) modelSelector.value = current;
+        if (localModels.includes(current)) {
+            modelSelector.value = current;
+        } else if(localModels.length > 0) {
+            modelSelector.value = localModels[0];
+        }
     }
 
     /* ───────────────── VIEW HELPERS ───────────────────────────────── */
@@ -319,17 +372,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* ───────────────── CHAT STORAGE & RENDERING ───────────────────── */
     async function loadChatsFromDisk() { chats = await window.electronAPI.getChats(); }
+    
     function renderChatList() {
+        // FIX: Add loading state
+        if (Object.keys(chats).length === 0 && chatHistoryList.innerHTML.includes('Loading')) {
+            chatHistoryList.innerHTML = '<div class="no-chats-message">No chats yet.</div>';
+            return;
+        }
         chatHistoryList.innerHTML = '';
         Object.entries(chats)
-            .sort((a, b) => b[0] - a[0])
+            .sort((a, b) => b[0] - a[0]) // Sort by timestamp (chatId)
             .forEach(([id, { title }]) => {
                 const item = document.createElement('div');
                 item.className = 'chat-history-item';
                 item.dataset.id = id;
                 if (id === activeChatId) item.classList.add('active');
                 item.innerHTML = `
-                    <span>${escapeHTML(title)}</span>
+                    <span title="${escapeHTML(title)}">${escapeHTML(title)}</span>
                     <div class="chat-item-actions">
                         <button class="chat-item-btn rename-btn" title="Rename">${ICONS.rename}</button>
                         <button class="chat-item-btn delete-btn" title="Delete">${ICONS.delete}</button>
@@ -347,7 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (content === 'thinking') {
             wrap.innerHTML = `<div class="message assistant thinking"><div class="thinking-star"></div><span>Thinking…</span></div>`;
         } else {
-            wrap.innerHTML = `<div class="message assistant">${marked.parse(String(content))}</div>`;
+            wrap.innerHTML = `<div class="message assistant">${parseMarkdown(String(content))}</div>`;
             if (content) addMessageActions(wrap);
         }
         chatContainer.appendChild(wrap);
@@ -359,8 +418,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const bar = document.createElement('div');
         bar.className = 'action-bar';
         bar.innerHTML = `
-            <button class="action-btn regenerate-btn" title="Regenerate response">⟳</button>
-            <button class="action-btn copy-response-btn" title="Copy response">⧉</button>`;
+            <button class="action-btn regenerate-btn" title="Regenerate response">
+                <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+            </button>
+            <button class="action-btn copy-response-btn" title="Copy response">
+                 <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+            </button>`;
         wrap.appendChild(bar);
     }
 
@@ -372,29 +435,62 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ───────────────── CHAT CRUD HELPERS ─────────────────────────── */
-    async function saveChat() {
+    // FIX: Smarter chat title generation
+    async function generateChatTitle(chatId, history) {
+        try {
+            const titlePrompt = {
+                role: 'user',
+                content: `Based on our conversation, create a very short, concise title for this chat (4-5 words max). Do not use quotes.`
+            };
+            const res = await fetch(`${OLLAMA_HOST}/api/chat`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    model: modelSelector.value,
+                    messages: [...history, titlePrompt],
+                    stream: false
+                }),
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            const newTitle = data.message?.content?.trim().replace(/["']/g, '');
+            if (newTitle && chats[chatId]) {
+                await renameChat(chatId, newTitle);
+            }
+        } catch(e) {
+            console.error("Failed to generate chat title", e);
+        }
+    }
+
+    async function saveChat(isNewChat = false) {
         if (!chatHistory.length) return;
         let title;
         if (activeChatId && chats[activeChatId]) {
             title = chats[activeChatId].title;
         } else {
             activeChatId = String(Date.now());
+            // Use a simple, temporary title first
             title = chatHistory[0].content.slice(0, 40) +
                     (chatHistory[0].content.length > 40 ? '…' : '');
             chats[activeChatId] = { title };
         }
         await window.electronAPI.saveChat({ chatId: activeChatId, data: { title, messages: chatHistory } });
         renderChatList();
+
+        // If it's the very first response of a new chat, generate a better title in the background
+        if (isNewChat && chatHistory.length === 2) {
+            generateChatTitle(activeChatId, chatHistory);
+        }
     }
+    
     async function renameChat(id, newTitle) {
+        if (!newTitle || !chats[id]) return;
         const { success } = await window.electronAPI.renameChat(id, newTitle);
         if (success) {
             chats[id].title = newTitle;
-            renderChatList();
-        } else {
-            alert('Rename failed');
+            renderChatList(); // Re-render the list to show the new title
         }
     }
+    
     async function deleteChat(id) {
         if (!confirm(`Delete "${escapeHTML(chats[id].title)}"?`)) return;
         const { success } = await window.electronAPI.deleteChat(id);
@@ -410,6 +506,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await window.electronAPI.loadChat(id);
         if (!data) {
             alert('Could not load chat');
+            delete chats[id];
+            renderChatList();
             return;
         }
         activeChatId = id;
@@ -423,14 +521,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* ───────────────── CHAT SUBMIT / GENERATE ─────────────────────── */
     async function handleChatSubmit(promptText) {
-        if (isGenerating) return;
+        if (isGenerating || modelSelector.value === "") return;
         isGenerating        = true;
         isAutoScrollEnabled = true;
-        const freshChat = activeChatId === null;
-        if (freshChat) showConversation();
+        const isNewChat = activeChatId === null;
+        if (isNewChat) showConversation();
+
         addMessage('user', promptText);
         chatHistory.push({ role: 'user', content: promptText });
-        if (freshChat) await saveChat();
+        if (isNewChat) await saveChat(); // Save with temporary title
+        
         promptInput.value = '';
         promptInput.style.height = 'auto';
         const assistantWrap = addMessage('assistant', 'thinking');
@@ -445,23 +545,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 }),
                 signal: chatAbortCtrl.signal
             });
-            if (!res.ok) throw new Error(res.statusText);
+            if (!res.ok) throw new Error(`API Error: ${res.status} ${res.statusText}`);
             const reader  = res.body.getReader();
             const decoder = new TextDecoder();
             let full = '';
             const msgDiv = assistantWrap.querySelector('.message.assistant');
+            assistantWrap.scrollIntoView({ behavior: 'smooth', block: 'end' });
+
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) {
                     if (full) {
                         chatHistory.push({ role: 'assistant', content: full });
                         addMessageActions(assistantWrap);
-                        await saveChat();
+                        await saveChat(isNewChat);
                     } else {
-                        assistantWrap.remove();
-                        if (freshChat) {
-                            await window.electronAPI.deleteChat(activeChatId);
-                            startNewChat();
+                        assistantWrap.remove(); // Remove 'thinking' if no response
+                        if (isNewChat) { // If it was a new chat that failed, delete it
+                           await window.electronAPI.deleteChat(activeChatId);
+                           startNewChat();
                         }
                     }
                     break;
@@ -474,34 +576,47 @@ document.addEventListener('DOMContentLoaded', () => {
                            if (data.message?.content) {
                                if (!full) msgDiv.classList.remove('thinking');
                                full += data.message.content;
-                               msgDiv.innerHTML = marked.parse(full);
+                               msgDiv.innerHTML = parseMarkdown(full);
+                           }
+                           if (data.done && data.error) {
+                               throw new Error(data.error);
                            }
                        });
                 scrollToBottom();
             }
         } catch (err) {
+            console.error(err);
             if (err.name === 'AbortError') {
                 assistantWrap.remove();
             } else {
-                assistantWrap.innerHTML = `<div class="message assistant">Error: ${err.message}</div>`;
+                assistantWrap.innerHTML = `<div class="message assistant error"><strong>Error:</strong> ${escapeHTML(err.message)}</div>`;
             }
         } finally {
             isGenerating = false;
+            chatAbortCtrl = null;
         }
     }
 
+    // FIX: Robust regeneration logic
     async function regenerateResponse() {
-        if (isGenerating || !chatHistory.length) return;
-        const idx = chatHistory.findLastIndex(m => m.role === 'user');
-        if (idx === -1) return;
-        const prompt = chatHistory[idx].content;
-        chatHistory.splice(idx);
-        const wraps = chatContainer.querySelectorAll('.message-wrapper');
-        if (wraps.length >= 2) {
-            wraps[wraps.length - 1].remove();
-            wraps[wraps.length - 2].remove();
-        }
-        await handleChatSubmit(prompt);
+        if (isGenerating || chatHistory.length < 2) return;
+    
+        // Find the last user prompt to resubmit
+        const lastUserIndex = chatHistory.findLastIndex(m => m.role === 'user');
+        if (lastUserIndex === -1) return;
+    
+        const promptToResubmit = chatHistory[lastUserIndex].content;
+    
+        // Remove the old prompt and any subsequent assistant responses/errors
+        chatHistory.splice(lastUserIndex);
+    
+        // Re-render the chat container from the now-correct history
+        chatContainer.innerHTML = '';
+        chatHistory.forEach(m => addMessage(m.role, m.content, false));
+        scrollToBottom();
+    
+        // Submit the prompt again
+        await handleChatSubmit(promptToResubmit);
     }
 
     function copyCode(btn) {
@@ -512,12 +627,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function copyResponse(btn) {
         const wrap = btn.closest('.message-wrapper');
-        navigator.clipboard.writeText(wrap.querySelector('.assistant').innerText);
+        const assistantMessage = wrap.querySelector('.assistant');
+        if (assistantMessage) {
+            navigator.clipboard.writeText(assistantMessage.innerText);
+            // Visual feedback could be added here
+        }
     }
 
     function autoResizeTextarea() {
         promptInput.style.height = 'auto';
-        promptInput.style.height = `${promptInput.scrollHeight}px`;
+        promptInput.style.height = `${Math.min(promptInput.scrollHeight, 200)}px`;
     }
 
     function showRenameModal(current) {
@@ -532,9 +651,9 @@ document.addEventListener('DOMContentLoaded', () => {
             input.select();
             const close = val => {
                 backdrop.classList.remove('active');
-                ok.removeEventListener('click', onOK);
-                cancel.removeEventListener('click', onCancel);
-                input.removeEventListener('keydown', onKey);
+                ok.onclick = null;
+                cancel.onclick = null;
+                input.onkeydown = null;
                 resolve(val);
             };
             const onOK     = () => close(input.value.trim());
@@ -543,16 +662,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (e.key === 'Enter') onOK();
                 if (e.key === 'Escape') onCancel();
             };
-            ok.addEventListener('click', onOK);
-            cancel.addEventListener('click', onCancel);
-            input.addEventListener('keydown', onKey);
+            ok.onclick = onOK;
+            cancel.onclick = onCancel;
+            input.onkeydown = onKey;
         });
     }
 
-    /* ───────────────── NEW CHAT JS (complete) ─────────────────────── */
     function startNewChat() {
-        if (isGenerating && chatAbortCtrl) {
-            chatAbortCtrl.abort();
+        // FIX: More robustly handle aborting an ongoing chat.
+        // This ensures the UI unlocks even if something went wrong with the AbortController.
+        if (isGenerating) {
+            if (chatAbortCtrl) {
+                chatAbortCtrl.abort();
+            }
             isGenerating = false;
         }
         chatAbortCtrl = null;
@@ -630,34 +752,41 @@ document.addEventListener('DOMContentLoaded', () => {
     chatContainerWrapper.addEventListener('scroll', () => {
         const bottom = chatContainerWrapper.scrollHeight -
                        chatContainerWrapper.scrollTop <=
-                       chatContainerWrapper.clientHeight + 10;
+                       chatContainerWrapper.clientHeight + 20; // A little buffer
         isAutoScrollEnabled = bottom;
     });
-
-    // Wire up suggestion cards to start fresh chat and submit prompt immediately
+    
     suggestionCards.forEach(card => {
         card.addEventListener('click', () => {
             const prompt = card.dataset.prompt;
-            if (!prompt) return;
+            if (!prompt || isGenerating || modelSelector.value === "") return;
 
-            startNewChat(); // clear old chat
+            startNewChat(); 
 
-            promptInput.value = prompt;
-            promptForm.requestSubmit();
+            // A small delay to ensure the view transition is complete before submitting
+            setTimeout(() => {
+                promptInput.value = prompt;
+                promptForm.requestSubmit();
+            }, 50);
         });
     });
 
     async function initialize() {
         setupTheme();
+        chatHistoryList.innerHTML = '<div class="no-chats-message">Loading...</div>';
         await loadChatsFromDisk();
         renderChatList();
         showStatus('Connecting to Ollama…');
         try {
             await refreshLocalModels();
-            startNewChat();
+            if (localModels.length > 0) {
+                 startNewChat();
+            } else {
+                 showStatus('No Models Found', 'Visit the Models tab to download one.');
+            }
         } catch (err) {
             console.error(err);
-            showStatus('Connection Failed', 'Ensure the Ollama daemon is running.');
+            showStatus('Connection Failed', 'Ensure Ollama is running and accessible at http://localhost:11434.');
         }
     }
     initialize();
