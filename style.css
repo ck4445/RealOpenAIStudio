@@ -231,3 +231,16 @@ pre {
   overflow-x: auto;
   max-height: none !important;
 }
+.show-more-btn {
+  margin: 0.5em 1em;
+  padding: 0.4em 0.8em;
+  background: #0e639c;
+  border: none;
+  color: white;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.show-more-btn:hover {
+  background: #1177d2;
+}

@@ -1,5 +1,3 @@
-// --- START OF FILE renderer.js ---
-
 document.addEventListener('DOMContentLoaded', () => {
 
     if (!Array.prototype.findLastIndex) {
@@ -12,7 +10,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ───────────────── CONFIG & GLOBAL STATE ───────────────────────── */
-    const OLLAMA_HOST       = 'http://localhost:11434';
+     // at the top of renderer.js, define how many to show initially
+	const MAX_VISIBLE_VARIANTS = 3;
+	const OLLAMA_HOST       = 'http://localhost:11434';
     let localModels         = [];
     let isGenerating        = false;
     let chatAbortCtrl       = null;
@@ -99,8 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return /^[\w-]+$/.test(id) ? id : null;
     }
 
-
-
     /* ───────────────── MARKED / HIGHLIGHT / KATEX SETUP ───────────── */
     const mdRenderer = new marked.Renderer();
     mdRenderer.code = (code, lang) => {
@@ -126,8 +124,6 @@ document.addEventListener('DOMContentLoaded', () => {
       <pre><code class="hljs ${valid}">${html}</code></pre>
     </div>`;
 };
-
-
 
     // Use the KaTeX extension for math formulas
     if (window.markedKatex) {
@@ -160,7 +156,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function updateThemeToggleUI() {
         themeToggle.innerHTML = document.body.classList.contains('light-mode') ? ICONS.sun : ICONS.moon;
-        window.electronAPI.setTheme(document.body.classList.contains('light-mode') ? 'light' : 'dark');
     }
 
     /* ───────────────── INSTALL CHECK ──────────────────────────────── */
@@ -208,8 +203,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return false;
 }
 
-
-
     /* ───────────────── RENDER & SYNC ─────────────────────────────── */
     function renderDiscoverModels() {
         const q = modelSearch.value.toLowerCase().trim();
@@ -255,20 +248,43 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.dataset.expanded = expand ? 'true' : 'false';
         btn.textContent      = expand ? 'Show less' : 'Show more';
     }
-    function syncLocalTagsIntoDiscover() {
-        for (let i = DISCOVER_MODELS.length - 1; i >= 0; i--) {
-            if (DISCOVER_MODELS[i].family === 'Other Installed') {
-                DISCOVER_MODELS.splice(i, 1);
-            }
-        }
-        const known = new Set(DISCOVER_MODELS.map(m => m.name));
-        localModels.forEach(tag => {
-            if (!known.has(tag)) {
-                DISCOVER_MODELS.push({ family: 'Other Installed', size: 'local', gb: '', name: tag });
-                known.add(tag);
-            }
-        });
+    
+function syncLocalTagsIntoDiscover(localModels) {
+  // wipe anything we previously injected into Other Installed so we do not stack duplicates
+  for (let i = DISCOVER_MODELS.length - 1; i >= 0; i--) {
+    if (DISCOVER_MODELS[i].family === 'Other Installed') {
+      DISCOVER_MODELS.splice(i, 1);
     }
+  }
+
+  const canonical = s => String(s).toLowerCase();
+
+  // names already present in real sections
+  const catalogNames = new Set(
+    DISCOVER_MODELS
+      .filter(m => m.family !== 'Other Installed')
+      .map(m => canonical(m.name))
+  );
+
+  const added = new Set();
+
+  Array.from(new Set(localModels))
+    .sort()
+    .forEach(tag => {
+      const key = canonical(tag);
+      if (!catalogNames.has(key) && !added.has(key)) {
+        DISCOVER_MODELS.push({
+          family: 'Other Installed',
+          size: tag,   // surface the tag itself so the UI can show it
+          gb: '',
+          name: tag
+        });
+        added.add(key);
+      }
+    });
+}
+
+
 
     /* ───────────────── DOWNLOAD MODEL ─────────────────────────────── */
     async function downloadModel(tag, btn) {
@@ -304,7 +320,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error(err);
             pane.innerHTML = `<span>Error</span><button class="download-btn" data-model-name="${tag}">Retry</button>`;
         } finally {
-            // FIX: Remove setTimeout and refresh immediately for responsive UI.
             await refreshLocalModels();
         }
     }
@@ -323,7 +338,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error(err);
             pane.innerHTML = `<span>Error</span><button class="uninstall-btn" data-model-name="${tag}">Retry</button>`;
         } finally {
-            // FIX: Remove setTimeout and refresh immediately.
             await refreshLocalModels();
         }
     }
@@ -385,10 +399,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ───────────────── CHAT STORAGE & RENDERING ───────────────────── */
-    async function loadChatsFromDisk() { chats = await window.electronAPI.getChats(); }
+    async function loadChatsFromDisk() {
+        try {
+            const response = await fetch('/api/chats');
+            if (!response.ok) {
+                console.error('Failed to fetch chats:', response.statusText);
+                chats = {};
+                return;
+            }
+            chats = await response.json();
+        } catch (error) {
+            console.error('Error loading chats from disk:', error);
+            chats = {};
+        }
+    }
     
     function renderChatList() {
-        // FIX: Add loading state
         if (Object.keys(chats).length === 0 && chatHistoryList.innerHTML.includes('Loading')) {
             chatHistoryList.innerHTML = '<div class="no-chats-message">No chats yet.</div>';
             return;
@@ -449,7 +475,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ───────────────── CHAT CRUD HELPERS ─────────────────────────── */
-    // FIX: Smarter chat title generation
     async function generateChatTitle(chatId, history) {
         try {
             const titlePrompt = {
@@ -482,36 +507,46 @@ document.addEventListener('DOMContentLoaded', () => {
             title = chats[activeChatId].title;
         } else {
             activeChatId = String(Date.now());
-            // Use a simple, temporary title first
             title = chatHistory[0].content.slice(0, 40) +
                     (chatHistory[0].content.length > 40 ? '…' : '');
             chats[activeChatId] = { title };
         }
         if (!sanitizeChatId(activeChatId)) return;
-        await window.electronAPI.saveChat({ chatId: activeChatId, data: { title, messages: chatHistory } });
+        
+        await fetch('/api/chats', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chatId: activeChatId, data: { title, messages: chatHistory } })
+        });
+        
         renderChatList();
 
-        // If it's the very first response of a new chat, generate a better title in the background
         if (isNewChat && chatHistory.length === 2) {
             generateChatTitle(activeChatId, chatHistory);
         }
     }
     
     async function renameChat(id, newTitle) {
-        if (!newTitle || !chats[id]) return;
-        if (!sanitizeChatId(id)) return;
-        const { success } = await window.electronAPI.renameChat(id, newTitle);
-        if (success) {
+        if (!newTitle || !chats[id] || !sanitizeChatId(id)) return;
+        
+        const response = await fetch(`/api/chats/${id}/rename`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ newTitle })
+        });
+        
+        if (response.ok) {
             chats[id].title = newTitle;
-            renderChatList(); // Re-render the list to show the new title
+            renderChatList();
         }
     }
     
     async function deleteChat(id) {
-        if (!confirm(`Delete "${escapeHTML(chats[id].title)}"?`)) return;
-        if (!sanitizeChatId(id)) return;
-        const { success } = await window.electronAPI.deleteChat(id);
-        if (success) {
+        if (!confirm(`Delete "${escapeHTML(chats[id].title)}"?`) || !sanitizeChatId(id)) return;
+
+        const response = await fetch(`/api/chats/${id}`, { method: 'DELETE' });
+
+        if (response.ok) {
             delete chats[id];
             if (activeChatId === id) startNewChat();
             else renderChatList();
@@ -521,13 +556,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     async function loadChat(id) {
         if (!sanitizeChatId(id)) return;
-        const data = await window.electronAPI.loadChat(id);
-        if (!data) {
+        
+        const response = await fetch(`/api/chats/${id}`);
+        if (!response.ok) {
             alert('Could not load chat');
             delete chats[id];
             renderChatList();
             return;
         }
+        
+        const data = await response.json();
         activeChatId = id;
         chatHistory  = data.messages || [];
         chatContainer.innerHTML = '';
@@ -547,7 +585,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         addMessage('user', promptText);
         chatHistory.push({ role: 'user', content: promptText });
-        if (isNewChat) await saveChat(); // Save with temporary title
+        if (isNewChat) await saveChat();
         
         promptInput.value = '';
         promptInput.style.height = 'auto';
@@ -578,9 +616,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         addMessageActions(assistantWrap);
                         await saveChat(isNewChat);
                     } else {
-                        assistantWrap.remove(); // Remove 'thinking' if no response
-                        if (isNewChat) { // If it was a new chat that failed, delete it
-                           await window.electronAPI.deleteChat(activeChatId);
+                        assistantWrap.remove();
+                        if (isNewChat) {
+                           await fetch(`/api/chats/${activeChatId}`, { method: 'DELETE' });
                            startNewChat();
                         }
                     }
@@ -615,22 +653,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // FIX: Robust regeneration logic
     async function regenerateResponse() {
         if (isGenerating || chatHistory.length < 2) return;
 
-        // Find the last user prompt to resubmit
         const lastUserIndex = chatHistory.findLastIndex(m => m.role === 'user');
         if (lastUserIndex === -1) return;
 
         const promptToResubmit = chatHistory[lastUserIndex].content;
+        const lastUserMessage = chatHistory[lastUserIndex];
 
-        chatHistory = chatHistory.slice(0, lastUserIndex + 1);
+        // Remove all messages after the last user message
+        chatHistory.splice(lastUserIndex + 1);
+
+        // Remove corresponding DOM elements
         while (chatContainer.children.length > chatHistory.length) {
             chatContainer.lastElementChild.remove();
         }
 
-        // Submit the prompt again
+        // Resubmit the last user message's content
         await handleChatSubmit(promptToResubmit);
     }
 
@@ -686,8 +726,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function startNewChat() {
-        // FIX: More robustly handle aborting an ongoing chat.
-        // This ensures the UI unlocks even if something went wrong with the AbortController.
         if (isGenerating) {
             if (chatAbortCtrl) {
                 chatAbortCtrl.abort();
@@ -779,7 +817,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             startNewChat(); 
 
-            // A small delay to ensure the view transition is complete before submitting
             setTimeout(() => {
                 promptInput.value = prompt;
                 promptForm.requestSubmit();
@@ -807,3 +844,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     initialize();
 });
+// --- END OF FILE renderer.js ---

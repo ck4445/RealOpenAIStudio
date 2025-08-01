@@ -2,24 +2,41 @@
   "name": "local-gemini-ui",
   "version": "1.0.0",
   "description": "A local AI chat interface for Ollama, styled like Gemini.",
-  "main": "main.js",
+  "main": "server.js",
   "scripts": {
-    "start": "electron ."
+    "start": "node server.js",
+    "build": "npm run build:win",
+    "build:win": "npx pkg . --targets node18-win-x64 --options \"win-subsystem=console\""
   },
   "keywords": [
-    "Electron",
+    "Web",
     "Ollama",
     "AI",
     "LLM"
   ],
   "author": "You",
   "license": "MIT",
-  "devDependencies": {
-    "electron": "^31.0.1"
-  },
   "dependencies": {
+    "express": "^4.19.2",
     "highlight.js": "^11.9.0",
     "marked": "^4.3.0",
-    "marked-katex-extension": "^2.1.1"
+    "marked-katex-extension": "^2.1.1",
+    "open": "^10.1.0"
+  },
+  "devDependencies": {
+    "pkg": "^5.8.1"
+  },
+  "bin": "server.js",
+  "pkg": {
+    "assets": [
+      "index.html",
+      "style.css",
+      "renderer.js",
+      "node_modules/open"
+    ],
+    "scripts": [
+      "node_modules/iconv-lite/encodings/*.js"
+    ],
+    "outputPath": "dist"
   }
 }
